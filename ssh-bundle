@@ -1,0 +1,47 @@
+#! /usr/bin/env bash
+
+__sshdir=$HOME/.ssh
+
+enable__help='@arg bundle directory @does add the ssh config under bundle to ~/.ssh'
+enable__ () {
+  local bundledir=$1
+  bundledir=$(realpath $bundledir)
+  bundle_name=$(realpath $bundledir)
+  if [ ! -f $bundledir/ssh.config ]; then
+    echo "No ssh.config found under $bundledir"
+    return 1
+  fi
+  bundle_name_default=$(basename $(dirname $bundledir))
+  read -p "Bundle name? [default: $bundle_name_default] " bundle_name
+  bundle_name=${bundle_name:-$bundle_name_default}
+  __exec ln -sf $bundledir $__sshdir/bundles/$bundle_name
+}
+
+fixpermissions__help='@does fix permissions on ssh config files.'
+fixpermissions__ () {
+  __exec chmod 600 $__sshdir/config
+  for file in $(find $__sshdir/bundles -name ssh.config); do
+    __exec chmod 600 $file
+  done
+}
+
+create__ () {
+  if [ -e "./ssh-bundle" ]; then
+    echo An existing bundle found.
+    return
+  fi
+  cp -r $(dirname $__src__)/ssh-bundle-example ./ssh-bundle
+  echo 'Bundle created at './ssh-bundle
+  echo 'Modify the config and then enable the bundle.'
+  echo '@see enable'
+}
+
+install__help=''
+install__ () {
+  echo '### Added by ssh-bundle' >> $__sshdir/config
+  echo 'Include ~/.ssh/bundles/*/ssh.config' >> $__sshdir/config
+  mkdir -p $__sshdir/bundles
+  fixpermissions__
+}
+
+. undies
