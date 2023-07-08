@@ -19,11 +19,12 @@ enable__ () {
 
 fixpermissions__help='@does fix permissions on ssh config files.'
 fixpermissions__ () {
-  __confirm__= __exec chmod 600 $__sshdir/config
-  for file in $(find -L $__sshdir/bundles -name ssh.config); do
-    __confirm__= __exec chmod 600 $file
-  done
-  for file in $(find -L $__sshdir/bundles -name *.pem); do
+  local files=("$@")
+  files+=( $__sshdir/config )
+  files+=( $(find -L $__sshdir/bundles -name ssh.config) )
+  files+=( $(find -L $__sshdir/bundles -name *.pem) )
+  files+=( $(find -L $__sshdir/bundles -name *.pub) )
+  for file in ${files[@]}; do
     __confirm__= __exec chmod 600 $file
   done
 }
